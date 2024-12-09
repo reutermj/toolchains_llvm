@@ -303,6 +303,7 @@ llvm_config_attrs.update({
 })
 
 def llvm_repo_impl(rctx):
+    print("Enter llvm_repo_impl")
     os = _os(rctx)
     if os == "windows":
         rctx.file("BUILD.bazel", executable = False)
@@ -314,11 +315,14 @@ def llvm_repo_impl(rctx):
         executable = False,
     )
 
+    print("before _download_llvm")
     updated_attrs = _download_llvm(rctx)
+    print("after _download_llvm")
 
     # We try to avoid patches to the downloaded repo so that it is easier for
     # users to bring their own LLVM distribution through `http_archive`. If we
     # do want to make changes, then we should do it through a patch file, and
     # document it for users of toolchain_roots attribute.
+    print("exit llvm_repo_impl")
 
     return updated_attrs

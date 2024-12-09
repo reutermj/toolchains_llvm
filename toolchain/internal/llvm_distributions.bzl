@@ -623,24 +623,33 @@ def _get_auth(ctx, urls):
     return {}
 
 def download_llvm(rctx):
+    print("enter download_llvm")
     urls = []
     sha256 = None
     strip_prefix = None
     key = None
     update_sha256 = False
     if rctx.attr.urls:
+        print("rctx.attr.urls ", rctx.attr.urls)
         urls, sha256, strip_prefix, key = _urls(rctx)
+        print(urls)
+        print(sha256)
+        print(strip_prefix)
+        print(key)
         if not sha256:
             update_sha256 = True
     if not urls:
+        print("not urls")
         urls, sha256, strip_prefix = _distribution_urls(rctx)
 
+    print("before rctx.download_and_extract")
     res = rctx.download_and_extract(
         urls,
         sha256 = sha256,
         stripPrefix = strip_prefix,
         auth = _get_auth(rctx, urls),
     )
+    print("after rctx.download_and_extract")
 
     if rctx.attr.libclang_rt:
         clang_versions = rctx.path("lib/clang").readdir()
@@ -653,6 +662,7 @@ def download_llvm(rctx):
     updated_attrs = _attr_dict(rctx.attr)
     if update_sha256:
         updated_attrs["sha256"].update([(key, res.sha256)])
+    print("exit download_llvm")
     return updated_attrs
 
 def _urls(rctx):
@@ -666,22 +676,30 @@ def _urls(rctx):
     return urls, sha256, strip_prefix, key
 
 def _get_llvm_version(rctx):
+    print("Enter _get_llvm_version")
     if rctx.attr.llvm_version:
+        print("yes rctx.attr.llvm_version ", rctx.attr.llvm_version)
         return rctx.attr.llvm_version
     if not rctx.attr.llvm_versions:
         fail("Neither 'llvm_version' nor 'llvm_versions' given.")
     (_, llvm_version) = _exec_os_arch_dict_value(rctx, "llvm_versions")
+    print("llvm_version")
     if not llvm_version:
         fail("LLVM version string missing for ({os}, {arch})", os = _os(rctx), arch = _arch(rctx))
+    print("exit _get_llvm_version")
     return llvm_version
 
 def _distribution_urls(rctx):
+    print("enter _distribution_urls")
     llvm_version = _get_llvm_version(rctx)
 
     if rctx.attr.distribution == "auto":
+        print("rctx.attr.distribution == auto")
         basename = _llvm_release_name(rctx, llvm_version)
     else:
+        print(rctx.attr.distribution)
         basename = rctx.attr.distribution
+    print("basename ", basename)
 
     if basename not in _llvm_distributions:
         fail("Unknown LLVM release: %s\nPlease ensure file name is correct." % basename)
@@ -694,11 +712,14 @@ def _distribution_urls(rctx):
         for pattern in rctx.attr.alternative_llvm_sources:
             urls.append(pattern.format(llvm_version = llvm_version, basename = basename))
     urls.append("{0}{1}".format(_llvm_distributions_base_url[llvm_version], url_suffix))
+    print("urls", urls)
 
     sha256 = _llvm_distributions[basename]
+    print("sha256", sha256)
 
     strip_prefix = basename[:(len(basename) - len(".tar.xz"))]
 
     strip_prefix = strip_prefix.rstrip("-rhel86")
+    print("exit _distribution_urls")
 
     return urls, sha256, strip_prefix

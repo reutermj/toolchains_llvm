@@ -60,51 +60,63 @@ def _join(path1, path2):
         return path2
 
 def llvm_config_impl(rctx):
+    print("Enter llvm_config_impl")
     _check_os_arch_keys(rctx.attr.sysroot)
     _check_os_arch_keys(rctx.attr.cxx_builtin_include_directories)
     _check_os_arch_keys(rctx.attr.extra_exec_compatible_with)
     _check_os_arch_keys(rctx.attr.extra_target_compatible_with)
 
     os = _os(rctx)
+    print("os", os)
     if os == "windows":
         _empty_repository(rctx)
         return
     arch = _arch(rctx)
+    print("arch", arch)
 
     if not rctx.attr.toolchain_roots:
         toolchain_root = ("@" if BZLMOD_ENABLED else "") + "@%s_llvm//" % rctx.attr.name
     else:
         (_key, toolchain_root) = _exec_os_arch_dict_value(rctx, "toolchain_roots")
+    print("toolchain_root", toolchain_root)
 
     if not toolchain_root:
         fail("LLVM toolchain root missing for ({}, {})".format(os, arch))
     (_key, llvm_version) = _exec_os_arch_dict_value(rctx, "llvm_versions")
+    print("llvm_version", llvm_version)
     if not llvm_version:
         # LLVM version missing for (os, arch)
         _empty_repository(rctx)
         return
     use_absolute_paths_llvm = rctx.attr.absolute_paths
     use_absolute_paths_sysroot = use_absolute_paths_llvm
+    print("use_absolute_paths_llvm", use_absolute_paths_llvm)
 
     # Check if the toolchain root is a system path.
     system_llvm = False
     if _is_absolute_path(toolchain_root):
+        print("_is_absolute_path(toolchain_root)")
         use_absolute_paths_llvm = True
         system_llvm = True
+    print("use_absolute_paths_llvm", use_absolute_paths_llvm)
 
     # Paths for LLVM distribution:
     if system_llvm:
         llvm_dist_path_prefix = _canonical_dir_path(toolchain_root)
     else:
         llvm_dist_label = Label(toolchain_root + ":BUILD.bazel")  # Exact target does not matter.
+        print("llvm_dist_label", llvm_dist_label)
         if use_absolute_paths_llvm:
             llvm_dist_path_prefix = _canonical_dir_path(str(rctx.path(llvm_dist_label).dirname))
         else:
             llvm_dist_path_prefix = _pkg_path_from_label(llvm_dist_label)
+        print("llvm_dist_path_prefix", llvm_dist_path_prefix)
 
     if not use_absolute_paths_llvm:
         llvm_dist_rel_path = _canonical_dir_path("../../" + llvm_dist_path_prefix)
+        print("llvm_dist_rel_path", llvm_dist_rel_path)
         llvm_dist_label_prefix = toolchain_root + ":"
+        print("llvm_dist_label_prefix", llvm_dist_label_prefix)
 
         # tools can only be defined as absolute paths or in a subdirectory of
         # config_repo_path, because their paths are relative to the package
@@ -122,12 +134,15 @@ def llvm_config_impl(rctx):
         wrapper_bin_prefix = "bin/"
         tools_path_prefix = "bin/"
         tools = _toolchain_tools(os)
+        print("tools", tools)
         for tool_name, symlink_name in tools.items():
             rctx.symlink(llvm_dist_rel_path + "bin/" + tool_name, tools_path_prefix + symlink_name)
+            print("simlinking ", llvm_dist_rel_path + "bin/" + tool_name, "to", tools_path_prefix + symlink_name)
         symlinked_tools_str = "".join([
             "\n" + (" " * 8) + "\"" + tools_path_prefix + symlink_name + "\","
             for symlink_name in tools.values()
         ])
+        print("symlinked_tools_str", symlinked_tools_str)
     else:
         llvm_dist_rel_path = llvm_dist_path_prefix
         llvm_dist_label_prefix = llvm_dist_path_prefix
@@ -143,8 +158,11 @@ def llvm_config_impl(rctx):
         rctx.attr.sysroot,
         use_absolute_paths_sysroot,
     )
+    print("sysroot_paths_dict", sysroot_paths_dict)
+    print("sysroot_labels_dict", sysroot_labels_dict)
 
     workspace_name = rctx.name
+    print("workspace_name", workspace_name)
     toolchain_info = struct(
         os = os,
         arch = arch,
@@ -174,6 +192,7 @@ def llvm_config_impl(rctx):
         extra_exec_compatible_with = rctx.attr.extra_exec_compatible_with,
         extra_target_compatible_with = rctx.attr.extra_target_compatible_with,
     )
+    print("toolchain_info", toolchain_info)
     exec_dl_ext = "dylib" if os == "darwin" else "so"
     cc_toolchains_str, toolchain_labels_str = _cc_toolchains_str(
         rctx,
@@ -181,6 +200,8 @@ def llvm_config_impl(rctx):
         toolchain_info,
         use_absolute_paths_llvm,
     )
+    print("cc_toolchains_str", cc_toolchains_str)
+    print("toolchain_labels_str", toolchain_labels_str)
 
     convenience_targets_str = _convenience_targets_str(
         rctx,
@@ -189,6 +210,9 @@ def llvm_config_impl(rctx):
         llvm_dist_label_prefix,
         exec_dl_ext,
     )
+    print("convenience_targets_str", convenience_targets_str)
+
+    print("rctx.attr._toolchains_bzl_tpl", rctx.attr._toolchains_bzl_tpl)
 
     # Convenience macro to register all generated toolchains.
     rctx.template(
@@ -198,6 +222,7 @@ def llvm_config_impl(rctx):
             "%{toolchain_labels}": toolchain_labels_str,
         },
     )
+    print("rctx.attr._build_toolchain_tpl", rctx.attr._build_toolchain_tpl)
 
     # BUILD file with all the generated toolchain definitions.
     rctx.template(
@@ -217,6 +242,7 @@ def llvm_config_impl(rctx):
         cc_wrapper_tpl = rctx.attr._darwin_cc_wrapper_sh_tpl
     else:
         cc_wrapper_tpl = rctx.attr._cc_wrapper_sh_tpl
+    print("cc_wrapper_tpl", cc_wrapper_tpl)
     rctx.template(
         "bin/cc_wrapper.sh",
         cc_wrapper_tpl,
@@ -224,6 +250,7 @@ def llvm_config_impl(rctx):
             "%{toolchain_path_prefix}": llvm_dist_path_prefix,
         },
     )
+    print("exit llvm_config_impl")
 
 def _cc_toolchains_str(
         rctx,

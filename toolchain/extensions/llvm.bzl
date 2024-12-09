@@ -49,18 +49,21 @@ def _constraint_dict(tags, name):
     return constraints
 
 def _llvm_impl_(module_ctx):
+    print("enter _llvm_impl_")
     for mod in module_ctx.modules:
         if not mod.is_root:
             fail("Only the root module can use the 'llvm' extension")
         toolchain_names = []
         for toolchain_attr in mod.tags.toolchain:
             name = toolchain_attr.name
+            print("name", name)
             toolchain_names.append(name)
             attrs = {
                 key: getattr(toolchain_attr, key)
                 for key in dir(toolchain_attr)
                 if not key.startswith("_")
             }
+            print(attrs)
             attrs["toolchain_roots"] = _root_dict([root for root in mod.tags.toolchain_root if root.name == name], "toolchain_root", name, True)
             attrs["sysroot"] = _root_dict([sysroot for sysroot in mod.tags.sysroot if sysroot.name == name], "sysroot", name, False)
             attrs["extra_exec_compatible_with"] = _constraint_dict(
@@ -72,9 +75,11 @@ def _llvm_impl_(module_ctx):
                 name,
             )
 
+            print("before llvm_toolchain")
             llvm_toolchain(
                 **attrs
             )
+            print("after llvm_toolchain")
 
         # Check that every defined toolchain_root or sysroot has a corresponding toolchain.
         for root in mod.tags.toolchain_root:
@@ -83,6 +88,7 @@ def _llvm_impl_(module_ctx):
         for root in mod.tags.sysroot:
             if root.name not in toolchain_names:
                 fail("sysroot '%s' does not have a corresponding toolchain" % root.name)
+    print("exit _llvm_impl_")
 
 _attrs = {
     "name": attr.string(doc = """\

@@ -210,7 +210,9 @@ def _resolve_version_for_suse(major_llvm_version, llvm_version):
     return os_name
 
 def llvm_release_name(rctx, llvm_version):
+    print("enter llvm_release_name")
     major_llvm_version = _major_llvm_version(llvm_version)
+    print("major_llvm_version", major_llvm_version)
     if major_llvm_version >= 19:
         arch = {
             "aarch64": "ARM64",
@@ -221,6 +223,9 @@ def llvm_release_name(rctx, llvm_version):
             "linux": "Linux",
             "windows": "Windows",
         }[_os(rctx)]
+        print("os ", os)
+        print("arch ", arch)
+        print("exit llvm_release_name")
         return "LLVM-{llvm_version}-{os}-{arch}.tar.xz".format(
             llvm_version = llvm_version,
             arch = arch,
@@ -228,9 +233,15 @@ def llvm_release_name(rctx, llvm_version):
         )
     else:
         (os, version, arch) = _os_version_arch(rctx)
+        print("os ", os)
+        print("version ", version)
+        print("arch ", arch)
         if os == "darwin":
+            print("exit llvm_release_name")
             return _darwin(llvm_version, arch)
         elif os == "windows":
+            print("exit llvm_release_name")
             return _windows(llvm_version, arch)
         else:
+            print("exit llvm_release_name")
             return _linux(llvm_version, os, version, arch)
