@@ -306,14 +306,17 @@ def llvm_repo_impl(rctx):
     print("Enter llvm_repo_impl")
     os = _os(rctx)
     if os == "windows":
-        rctx.file("BUILD.bazel", executable = False)
-        return None
-
-    rctx.file(
-        "BUILD.bazel",
-        content = rctx.read(Label("//toolchain:BUILD.llvm_repo")),
-        executable = False,
-    )
+        rctx.file(
+            "BUILD.bazel",
+            content = rctx.read(Label("//toolchain:BUILD.llvm_repo_windows")),
+            executable = False,
+        )
+    else:
+        rctx.file(
+            "BUILD.bazel",
+            content = rctx.read(Label("//toolchain:BUILD.llvm_repo")),
+            executable = False,
+        )
 
     print("before _download_llvm")
     updated_attrs = _download_llvm(rctx)

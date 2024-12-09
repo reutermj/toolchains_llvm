@@ -19,6 +19,7 @@ SUPPORTED_TARGETS = [
     ("darwin", "aarch64"),
     ("none", "wasm32"),
     ("none", "wasm64"),
+    ("windows", "x86_64"),
 ]
 
 # Map of tool name to its symlinked name in the tools directory.
@@ -111,7 +112,7 @@ def os(rctx):
 
     name = rctx.attr.exec_os
     if name:
-        if name in ("linux", "darwin"):
+        if name in ("linux", "darwin", "windows"):
             return name
         else:
             fail("Unsupported value for exec_os: %s" % name)
@@ -129,7 +130,7 @@ def os_from_rctx(rctx):
 
 def os_bzl(os):
     # Return the OS string as used in bazel platform constraints.
-    return {"darwin": "osx", "linux": "linux", "none": "none"}[os]
+    return {"darwin": "osx", "linux": "linux", "none": "none", "windows": "windows"}[os]
 
 def arch(rctx):
     arch = rctx.attr.exec_arch
