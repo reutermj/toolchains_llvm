@@ -27,16 +27,16 @@ SUPPORTED_TARGETS = [
 _toolchain_tools = {
     name: name
     for name in [
-        "clang-cpp",
-        "ld.lld",
-        "llvm-ar",
-        "llvm-dwp",
-        "llvm-profdata",
-        "llvm-cov",
-        "llvm-nm",
-        "llvm-objcopy",
-        "llvm-objdump",
-        "llvm-strip",
+        "clang-cpp.exe",
+        "ld.lld.exe",
+        "llvm-ar.exe",
+        "llvm-dwp.exe",
+        "llvm-profdata.exe",
+        "llvm-cov.exe",
+        "llvm-nm.exe",
+        "llvm-objcopy.exe",
+        "llvm-objdump.exe",
+        "llvm-strip.exe",
     ]
 }
 
