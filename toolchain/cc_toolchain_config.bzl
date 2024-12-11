@@ -320,7 +320,7 @@ def cc_toolchain_config(
         "ar": tools_path_prefix + ("llvm-ar" if not use_libtool else "libtool"),
         "cpp": tools_path_prefix + "clang-cpp",
         "dwp": tools_path_prefix + "llvm-dwp",
-        "gcc": wrapper_bin_prefix + "cc_wrapper.sh",
+        "gcc": wrapper_bin_prefix + ("cc_wrapper.sh" if not exec_os == "windows" else "cc_wrapper.bat"),
         "gcov": tools_path_prefix + "llvm-profdata",
         "ld": tools_path_prefix + "ld.lld" if use_lld else "/usr/bin/ld",
         "llvm-cov": tools_path_prefix + "llvm-cov",

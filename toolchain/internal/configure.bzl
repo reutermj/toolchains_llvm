@@ -235,16 +235,25 @@ def llvm_config_impl(rctx):
     )
 
     # CC wrapper script; see comments near the definition of `wrapper_bin_prefix`.
+
     if os == "darwin":
         cc_wrapper_tpl = rctx.attr._darwin_cc_wrapper_sh_tpl
+        cc_wrapper_out = "bin/cc_wrapper.sh"
+        cc_wrapper_toolchain_path_prefix = llvm_dist_path_prefix
+    elif os == "windows":
+        cc_wrapper_tpl = rctx.attr._cc_wrapper_bat_tpl
+        cc_wrapper_out = "bin/cc_wrapper.bat"
+        cc_wrapper_toolchain_path_prefix = llvm_dist_path_prefix.replace("/", "\\")
     else:
         cc_wrapper_tpl = rctx.attr._cc_wrapper_sh_tpl
+        cc_wrapper_out = "bin/cc_wrapper.sh"
+        cc_wrapper_toolchain_path_prefix = llvm_dist_path_prefix
     print("cc_wrapper_tpl", cc_wrapper_tpl)
     rctx.template(
-        "bin/cc_wrapper.sh",
+        cc_wrapper_out,
         cc_wrapper_tpl,
         {
-            "%{toolchain_path_prefix}": llvm_dist_path_prefix,
+            "%{toolchain_path_prefix}": cc_wrapper_toolchain_path_prefix,
         },
     )
     print("exit llvm_config_impl")

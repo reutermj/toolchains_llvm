@@ -294,6 +294,9 @@ llvm_config_attrs.update({
     "_build_toolchain_tpl": attr.label(
         default = "//toolchain:BUILD.toolchain.tpl",
     ),
+    "_cc_wrapper_bat_tpl": attr.label(
+        default = "//toolchain:cc_wrapper.bat.tpl",
+    ),
     "_darwin_cc_wrapper_sh_tpl": attr.label(
         default = "//toolchain:osx_cc_wrapper.sh.tpl",
     ),
