@@ -8,7 +8,4 @@ for %%A in (%*) do (
     )
 )
 
-setlocal enabledelayedexpansion
-echo Arguments without -fPIC: !newArgs!
-
-%{toolchain_path_prefix}bin\clang.exe !newArgs!
+%{toolchain_path_prefix}bin\clang.exe %newArgs%
