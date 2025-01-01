@@ -43,16 +43,6 @@ def llvm_toolchain(name, **kwargs):
     if kwargs.get("llvm_version") == kwargs.get("llvm_versions"):
         fail("Exactly one of llvm_version or llvm_versions must be set")
 
-    toolchain_args = {
-        k: v
-        for k, v in kwargs.items()
-        if (k not in _llvm_repo_attrs.keys()) or (k in _common_attrs.keys())
-    }
-
-    print("toolchain_args ", toolchain_args)
-    toolchain(name = name, **toolchain_args)
-    print("exit llvm_toolchain")
-
     if not kwargs.get("toolchain_roots"):
         print("not toolchain_roots")
         llvm_args = {
@@ -69,3 +59,13 @@ def llvm_toolchain(name, **kwargs):
         print("not llvm_versions")
         kwargs.update(llvm_versions = {"": kwargs.get("llvm_version")})
         print("setting llvm_versions to llvm_version ", kwargs.get("llvm_version"))
+
+    toolchain_args = {
+        k: v
+        for k, v in kwargs.items()
+        if (k not in _llvm_repo_attrs.keys()) or (k in _common_attrs.keys())
+    }
+
+    print("toolchain_args ", toolchain_args)
+    toolchain(name = name, **toolchain_args)
+    print("exit llvm_toolchain")
